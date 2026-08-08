@@ -1,0 +1,44 @@
+# RSS Feed Configuration for Newsletter
+# Salesforce section is first, then AI, then Tech
+
+salesforce:
+  - name: "Salesforce Blog"
+    url: "https://www.salesforce.com/blog/feed/"
+    category: "salesforce"
+  - name: "Salesforce Developer Blog"
+    url: "https://developer.salesforce.com/blogs/feed/"
+    category: "salesforce"
+  - name: "Salesforce Releases"
+    url: "https://www.salesforce.com/blog/releases/feed/"
+    category: "salesforce"
+  - name: "Salesforce Trailblazer"
+    url: "https://trailhead.salesforce.com/blog/feed"
+    category: "salesforce"
+
+ai_news:
+  - name: "OpenAI Blog"
+    url: "https://openai.com/news/rss.xml"
+    category: "ai"
+  - name: "Hugging Face Blog"
+    url: "https://huggingface.co/blog/feed.xml"
+    category: "ai"
+  - name: "MarkTechPost"
+    url: "https://www.marktechpost.com/feed/"
+    category: "ai"
+  - name: "TLDR AI"
+    url: "https://tldr.tech/api/rss/ai"
+    category: "ai"
+  - name: "MIT Technology Review AI"
+    url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/"
+    category: "ai"
+
+tech_news:
+  - name: "TechCrunch AI"
+    url: "https://techcrunch.com/category/artificial-intelligence/feed/"
+    category: "tech"
+  - name: "The Verge AI"
+    url: "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
+    category: "tech"
+  - name: "Ars Technica"
+    url: "https://feeds.arstechnica.com/arstechnica/index"
+    category: "tech"
