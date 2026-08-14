@@ -262,7 +262,7 @@ def render_sidebar(llm_config):
     with st.sidebar:
         # Brand header - sits flush at the very top of the sidebar.
         st.image(
-            "WhatsApp Image 2026-08-10 at 8.30.12 PM.jpeg",
+            "public/club-logo.jpeg",
             use_container_width=True,
         )
 

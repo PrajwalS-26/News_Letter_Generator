@@ -13,10 +13,10 @@ from datetime import datetime
 from typing import List, Dict
 from jinja2 import Environment, FileSystemLoader
 
-# Local branded assets committed to the repo root that the template
-# references with a relative path. They are copied next to index.html.
+# Local branded assets the template references with a relative path. They are
+# copied next to index.html on every build so the deployed site serves them.
 LOCAL_ASSETS = [
-    "WhatsApp Image 2026-08-10 at 8.30.12 PM.jpeg",
+    "club-logo.jpeg",
 ]
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
