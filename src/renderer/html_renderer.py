@@ -3,13 +3,23 @@
 Renders the collected, curated content into a single production-grade
 ``public/index.html`` file suitable for GitHub Pages hosting. The file is
 overwritten on every run so the published site always reflects the latest
-edition.
+edition. Branded assets referenced by the template (e.g. the header logo)
+are copied into the public folder so they resolve on the live site.
 """
 
 import os
+import shutil
 from datetime import datetime
 from typing import List, Dict
 from jinja2 import Environment, FileSystemLoader
+
+# Local branded assets committed to the repo root that the template
+# references with a relative path. They are copied next to index.html.
+LOCAL_ASSETS = [
+    "WhatsApp Image 2026-08-10 at 8.30.12 PM.jpeg",
+]
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 
 class HTMLRenderer:
@@ -17,9 +27,7 @@ class HTMLRenderer:
 
     def __init__(self, template_dir: str = None):
         if template_dir is None:
-            # Project root is two levels above this module (src/renderer).
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            template_dir = os.path.join(project_root, "templates")
+            template_dir = os.path.join(PROJECT_ROOT, "templates")
         self.template_dir = template_dir
         self.env = Environment(loader=FileSystemLoader(template_dir))
 
@@ -31,8 +39,15 @@ class HTMLRenderer:
         on demand so the GitHub Actions deploy step always has fresh content.
         """
         if output_path is None:
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            output_path = os.path.join(project_root, "public", "index.html")
+            output_path = os.path.join(PROJECT_ROOT, "public", "index.html")
+
+        output_dir = os.path.dirname(output_path) or "."
+        # Ensure the public directory exists for GitHub Pages.
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Copy branded assets (e.g. header logo) next to index.html so the
+        # deployed site can serve them via relative paths.
+        self._copy_local_assets(output_dir)
 
         now = datetime.now()
 
@@ -48,14 +63,22 @@ class HTMLRenderer:
         template = self.env.get_template("newsletter.html")
         html_content = template.render(**render_data)
 
-        # Ensure the public directory exists for GitHub Pages.
-        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-
         # Overwrite the single canonical file.
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         return output_path
+
+    @staticmethod
+    def _copy_local_assets(output_dir: str) -> None:
+        """Copy committed brand assets from the repo root into the output dir."""
+        for asset in LOCAL_ASSETS:
+            src = os.path.join(PROJECT_ROOT, asset)
+            if os.path.exists(src):
+                try:
+                    shutil.copy2(src, os.path.join(output_dir, asset))
+                except OSError:
+                    pass
 
     @staticmethod
     def _flatten_articles(newsletter_content: dict) -> List[Dict]:
