@@ -12,7 +12,7 @@ newsletter:
   # Choose backend: "ollama" (local) or "groq" (cloud, free, fast)
   llm:
     backend: "groq"
-    model: "llama-3.1-70b-versatile"
+    model: "openai/gpt-oss-120b"
     host: "http://localhost:11434"
     temperature: 0.7
     max_tokens: 4096
