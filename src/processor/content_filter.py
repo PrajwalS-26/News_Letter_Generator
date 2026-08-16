@@ -39,10 +39,11 @@ class ContentFilter:
         return result
 
     def _rank_articles(self, articles: List[Article]) -> List[Article]:
-        """Rank articles by relevance (summary length as proxy for quality)."""
+        """Rank articles for the section, prioritizing stories that carry an
+        image so published cards stay visually rich within the per-section cap."""
         return sorted(
             articles,
-            key=lambda a: len(a.summary),
+            key=lambda a: (a.image_url is not None, len(a.summary)),
             reverse=True
         )
 

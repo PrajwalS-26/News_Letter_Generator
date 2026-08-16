@@ -42,7 +42,8 @@ Write an engaging introduction that highlights the key themes:"""
         try:
             return self.llm.generate(prompt, temperature=0.7, max_tokens=150)
         except Exception:
-            return f"Latest updates in {section_name}"
+            # Let the caller apply a meaningful per-section fallback.
+            return ""
 
     def generate_title(self, articles: List[Article]) -> str:
         """Generate a catchy newsletter title."""

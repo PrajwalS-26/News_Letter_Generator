@@ -9,11 +9,13 @@ Designed to run headlessly on a cron schedule (e.g. every Monday via
 GitHub Actions), so it never blocks on interactive prompts.
 
 Usage:
-    python generate.py                          # Build public/index.html
-    python generate.py --preview                # Build without sending
-    python generate.py --send email slack       # Build and distribute
-    python generate.py --model llama-3.1-8b-instruction-following   # custom model
-    python generate.py --date 2026-08-10        # Override edition date
+    python generate.py                                          # Build public/index.html
+    python generate.py --articles-per-section 5                 # 5 stories per section
+    python generate.py --days-back 14                           # Collect from last 14 days
+    python generate.py --preview                                # Build without sending
+    python generate.py --send email slack                       # Build and distribute
+    python generate.py --model openai/gpt-oss-120b              # Custom LLM model
+    python generate.py --date 2026-08-10                        # Override edition date
 """
 
 import os
@@ -118,6 +120,10 @@ def run_cli(argv=None) -> int:
     parser.add_argument("--preview", action="store_true", help="Build without sending")
     parser.add_argument("--send", nargs="+", choices=["email", "slack"], help="Send to specific channels")
     parser.add_argument("--model", type=str, help="LLM model to use")
+    parser.add_argument("--articles-per-section", type=int,
+                        help="Number of stories per section (overrides config)")
+    parser.add_argument("--days-back", type=int, default=7,
+                        help="Look-back window for RSS collection in days (default: 7)")
     args = parser.parse_args(argv)
 
     # Seed environment from .env once available.
@@ -131,6 +137,11 @@ def run_cli(argv=None) -> int:
     # Optional model override.
     if args.model:
         llm_config["model"] = args.model
+
+    # Optional article-count override - this is the simplest way to control
+    # how many news items appear under each section.
+    if args.articles_per_section:
+        newsletter["max_articles_per_section"] = args.articles_per_section
 
     print("=" * 60)
     print("Salesforce AAA UVCE - Official Digest (Static Site Generator)")
@@ -147,8 +158,8 @@ def run_cli(argv=None) -> int:
     # 2. Collect articles.
     print("\n[2/6] Collecting articles from RSS feeds...")
     collector = RSSCollector(feeds_config)
-    articles = collector.collect_all(days_back=7)
-    print(f"   Found {len(articles)} candidate stories")
+    articles = collector.collect_all(days_back=args.days_back)
+    print(f"   Found {len(articles)} candidate stories (look-back: {args.days_back} days)")
 
     if not articles:
         print("   ERROR: No articles found. Check the RSS feed configuration.")

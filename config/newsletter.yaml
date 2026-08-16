@@ -5,11 +5,11 @@ newsletter:
   organization: "Salesforce AAA UVCE"
   tagline: "Your weekly dose of Salesforce & AI updates"
   
-  # Maximum articles per section
+  # Maximum articles per section - the number of stories shown under each
+  # section heading. Bump this up to include more news per category.
   max_articles_per_section: 5
   
   # LLM settings
-  # Choose backend: "ollama" (local) or "groq" (cloud, free, fast)
   llm:
     backend: "groq"
     model: "openai/gpt-oss-120b"
@@ -17,10 +17,10 @@ newsletter:
     temperature: 0.7
     max_tokens: 4096
   
-  # Output settings
+  # Output settings - the site always publishes a single public/index.html
   output:
-    directory: "output"
-    format: ["html", "pdf"]
+    directory: "public"
+    format: ["html"]
   
   # Distribution settings
   distribution:

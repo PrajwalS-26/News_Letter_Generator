@@ -194,6 +194,21 @@
             border-bottom: 1px solid #e2e8f0;
         }
 
+        .article-cover {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            padding: 16px;
+            background: linear-gradient(135deg, #0369a1 0%, #1e3a5f 100%);
+            color: #bfdbfe;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            border-bottom: 1px solid #1e293b;
+        }
+
         .article-body {
             padding: 24px;
         }
@@ -394,7 +409,7 @@
                 <div class="section-header">
                     <div>
                         <h2>{{ section.name }}</h2>
-                        {% if section.introduction %}
+                        {% if section.introduction and not section.introduction.startswith('Latest updates in') %}
                         <div class="section-intro">{{ section.introduction }}</div>
                         {% endif %}
                     </div>
@@ -405,6 +420,8 @@
                     <article class="article-card">
                         {% if article.image_url %}
                         <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-image" onerror="this.style.display='none'">
+                        {% else %}
+                        <div class="article-cover">{{ article.source }}</div>
                         {% endif %}
                         <div class="article-body">
                             <div class="article-meta">
@@ -442,9 +459,8 @@
             <p>&copy; {{ year }} <strong>{{ organization }}</strong>. All rights reserved.</p>
             <p>Curated with AI &amp; passion for the community.</p>
             <div class="social-bar">
-                <a href="#" class="social-icon" title="Facebook">f</a>
-                <a href="#" class="social-icon" title="LinkedIn">in</a>
-                <a href="#" class="social-icon" title="Twitter / X">x</a>
+                <a href="https://www.instagram.com/salesforce_aaa_uvce?igsh=MXNueGFqZm91cjZkNQ==&amp;igsi=MXNueGFqZm91cjZkNQ==" target="_blank" rel="noopener" class="social-icon" title="Instagram">ig</a>
+                <a href="https://www.linkedin.com/company/uvce-agentforce-academia-advocates/" target="_blank" rel="noopener" class="social-icon" title="LinkedIn">in</a>
             </div>
         </footer>
     </div>

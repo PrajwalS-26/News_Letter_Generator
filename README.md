@@ -1,139 +1,137 @@
-git remote add origin https://github.com/PrajwalS-26/News_Letter_Generator.git
-git branch -M main
-git push -u origin # Newsletter Generator - Salesforce AAA UVCE
+# Salesforce AAA UVCE Official Digest
 
-An automated newsletter generation system using AI (Groq cloud or Ollama local) to collect, summarize, and generate weekly newsletters for the Salesforce AAA UVCE community.
+An automated **Static Site Generator** that collects RSS news, summarizes the top stories with the **Groq** LLM, and publishes a production-grade website to **`public/index.html`** — automatically hosted on **GitHub Pages**.
+
+The pipeline runs on a **cron schedule via GitHub Actions** (every Monday, Wednesday and Friday), so the digest stays fresh without any manual work.
 
 ## Features
 
-- **RSS Feed Collection**: Automatically gathers articles from Salesforce blogs, AI news, and tech sources
-- **AI-Powered Content**: Uses Groq (free, fast cloud) or Ollama (local) for content generation
-- **HTML + PDF Output**: Generates both responsive HTML and downloadable PDF newsletters
-- **Images**: Displays article images when available from RSS feeds
-- **Web UI**: Beautiful Streamlit interface for easy use
+- **RSS Feed Collection** — gathers stories from Salesforce blogs, AI news, and tech sources (`config/feeds.yaml`)
+- **AI Summarization** — Groq-powered summaries, section intros, and a newsletter introduction
+- **Controllable Article Count** — choose exactly how many stories appear per section (default: 5)
+- **Static Website Output** — a single `public/index.html` overwritten on every build, ready for GitHub Pages
+- **Automated Publishing** — GitHub Actions cron + manual `workflow_dispatch` trigger
+- **Article Images** — displays images pulled from RSS feeds when available
+- **Social Footer** — Instagram and LinkedIn links to the club's official pages
+- **Optional Distribution** — push a summary to Slack or email a copy after publishing
 
-## Quick Start (Groq - Recommended, Free)
+## Quick Start
 
-### 1. Get Free Groq API Key
+### 1. Get a Free Groq API Key
 
 1. Go to [console.groq.com](https://console.groq.com)
-2. Sign up (free)
-3. Create an API key
-4. Copy the key
+2. Sign up (free) and create an API key
+3. Copy the key
 
-### 2. Setup Project
+### 2. Setup
 
 ```bash
-cd "D:\NewsLetter generation"
+cd News_Letter_Generator
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file
+# Create the environment file and add your key
 copy config\.env.example .env
 ```
 
-### 3. Add Your API Key
+Set `GROQ_API_KEY=gsk_your_key_here` inside `.env`.
 
-Edit `.env` and add your Groq API key:
-
-```
-GROQ_API_KEY=gsk_your_key_here
-```
-
-### 4. Generate Newsletter
+### 3. Generate the Site
 
 ```bash
 python generate.py
 ```
 
-Or use the web UI:
+This overwrites `public/index.html` with the latest edition.
 
-```bash
-streamlit run app.py
-```
+## Controlling the Number of News
 
-## Quick Start (Ollama - Local, No API Key)
+You control how many stories appear **per section** two ways:
 
-### 1. Install Ollama
+### Option A — Config file (default)
 
-Download from [ollama.com](https://ollama.com/download)
-
-### 2. Pull Model
-
-```bash
-ollama pull llama3.1:8b
-```
-
-### 3. Start Ollama
-
-```bash
-ollama serve
-```
-
-### 4. Edit Config
-
-Change `config/newsletter.yaml`:
+Edit `config/newsletter.yaml`:
 
 ```yaml
-llm:
-  backend: "ollama"
-  model: "llama3.1:8b"
+newsletter:
+  max_articles_per_section: 5   # stories shown under each section heading
 ```
 
-### 5. Generate
+A value of `5` gives at least five news items per section (Salesforce Updates, AI & Machine Learning, Tech Industry News) whenever the feeds produce enough stories in the collection window.
+
+### Option B — CLI flag (override, no config edit)
 
 ```bash
-python generate.py
+python generate.py --articles-per-section 5
 ```
+
+If a section still looks light, widen the **collection window** so the feeds have more recent stories to draw from:
+
+```bash
+python generate.py --days-back 14
+```
+
+> **Note:** each section shows up to `max_articles_per_section` stories. If a category has fewer stories published within the look-back window, that section will naturally have fewer — add more feeds in `config/feeds.yaml` or increase `--days-back` to fill it out.
 
 ## Usage
 
-### Basic Commands
+### Commands
 
 ```bash
-# Generate newsletter (HTML + PDF)
+# Build the site (default: 5 stories per section, last 7 days)
 python generate.py
 
-# Preview only (no files saved)
+# Build with 6 stories per section
+python generate.py --articles-per-section 6
+
+# Collect from the last 14 days
+python generate.py --days-back 14
+
+# Build without distributing
 python generate.py --preview
 
-# Generate HTML only (skip PDF)
-python generate.py --no-pdf
-
-# Use different model
-python generate.py --model mistral
-```
-
-### Distribution
-
-```bash
-# Send via email
-python generate.py --send email
-
-# Send to multiple channels
+# Build and distribute to channels
 python generate.py --send email slack
-
-# Send with PDF attachment
-python generate.py --send email --no-preview
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--preview` | Preview without saving files |
-| `--send CHANNEL` | Send to email or slack |
-| `--no-pdf` | Skip PDF generation |
-| `--model MODEL` | Use different LLM model |
-| `--output-dir DIR` | Custom output directory |
-| `--date YYYY-MM-DD` | Set newsletter date |
+| `--articles-per-section N` | Stories per section (overrides config, default 5) |
+| `--days-back N` | RSS look-back window in days (default 7) |
+| `--preview` | Build without sending to any channel |
+| `--send CHANNEL` | Distribute to `email` and/or `slack` |
+| `--model MODEL` | Override the Groq model |
+| `--date YYYY-MM-DD` | Override the edition date |
+
+## Automated Publishing (GitHub Actions)
+
+`.github/workflows/publish.yml` runs on a schedule:
+
+```yaml
+schedule:
+  - cron: "30 10 * * 1,3,5"   # Mon, Wed, Fri at 10:30 UTC
+```
+
+It also supports a manual **"Run workflow"** button via `workflow_dispatch`.
+
+### Setup for the first deploy
+
+1. **Add the API key** — GitHub repo → Settings → Secrets and variables → Actions → add `GROQ_API_KEY`
+2. **Enable Pages** — repo → Settings → Pages → Source: **Deploy from a branch** → `gh-pages`
+3. Commit and push. The workflow builds `public/` and deploys it to the `gh-pages` branch with `peaceiris/actions-gh-pages`.
+
+Your live site will be at `https://<username>.github.io/News_Letter_Generator/`.
+
+> **Important:** the club logo lives in `public/assets/club-logo.jpeg` and is deployed with the site. Keep it committed so it ships on every build.
 
 ## Configuration
 
 ### RSS Feeds (`config/feeds.yaml`)
 
-Add or remove RSS feeds:
+Add or remove feeds per category:
 
 ```yaml
 salesforce:
@@ -153,102 +151,105 @@ ai_news:
 newsletter:
   name: "Salesforce AAA UVCE Weekly Digest"
   organization: "Salesforce AAA UVCE"
-  
+  tagline: "Your weekly dose of Salesforce & AI updates"
+  max_articles_per_section: 5
+
   llm:
-    model: "llama3.1:8b"
+    model: "openai/gpt-oss-120b"
     temperature: 0.7
-  
+
   distribution:
     email:
       enabled: false
-      smtp_host: "smtp.gmail.com"
+    slack:
+      enabled: false
 ```
 
 ### Environment Variables (`.env`)
 
 ```bash
-# Ollama
-OLLAMA_HOST=http://localhost:11434
-OLLAMA_MODEL=llama3.1:8b
+# Required
+GROQ_API_KEY=gsk_your_key_here
 
-# Email (Gmail example)
+# Email (optional)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
+SMTP_RECIPIENTS=a@example.com,b@example.com
 
-# Slack
+# Slack (optional)
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+SLACK_CHANNEL=#newsletter
 ```
 
 ## Project Structure
 
 ```
-newsletter-automation/
+News_Letter_Generator/
+├── .github/workflows/
+│   └── publish.yml        # Cron + manual publish to GitHub Pages
 ├── config/
-│   ├── feeds.yaml          # RSS feed sources
-│   ├── newsletter.yaml     # Newsletter settings
-│   └── .env.example        # Environment template
+│   ├── feeds.yaml         # RSS feed sources
+│   └── newsletter.yaml    # Newsletter settings & article counts
+├── public/                # Published site (deployed to gh-pages)
+│   ├── assets/
+│   │   └── club-logo.jpeg # Brand logo served with the site
+│   └── index.html         # Generated by generate.py
 ├── src/
-│   ├── collector/          # RSS & web scraping
-│   ├── processor/          # Content filtering & LLM
-│   ├── llm/                # Ollama client
-│   ├── renderer/           # HTML & PDF generation
-│   └── distribution/       # Email, Slack
+│   ├── collector/         # RSS collection
+│   ├── processor/         # Filtering, ranking & LLM composition
+│   ├── llm/               # Groq client
+│   ├── renderer/          # Jinja2 -> static HTML
+│   └── distribution/      # Email & Slack
 ├── templates/
-│   └── newsletter.html     # HTML email template
-├── output/                 # Generated newsletters
-├── generate.py             # Entry point
-└── requirements.txt        # Python dependencies
+│   └── newsletter.html    # Website template (Jinja2)
+├── app.py                 # Optional Streamlit preview UI
+├── generate.py            # SSG entry point
+└── requirements.txt
 ```
 
 ## Customization
 
 ### Changing the Template
 
-Edit `templates/newsletter.html` to customize the newsletter design. The template uses Jinja2 syntax.
+Edit `templates/newsletter.html` (Jinja2) — the fixed header, hero, article cards, footer social links, and all CSS live there.
 
 ### Adding New Sources
 
 1. Find the RSS feed URL
 2. Add it to `config/feeds.yaml`
-3. Specify the category (salesforce, ai, tech)
+3. Give it a category (`salesforce`, `ai`, or `tech`)
 
-### Adjusting Content
+### Previewing Locally
 
-Edit `config/newsletter.yaml` to change:
-- Number of articles per section
-- LLM temperature (creativity)
-- Output formats
+Serve the built site with any static server:
+
+```bash
+python -m http.server 8000 --directory public
+```
+
+Then open `http://localhost:8000/`. Or use the Streamlit dashboard:
+
+```bash
+streamlit run app.py
+```
 
 ## Troubleshooting
 
-### "Cannot connect to Ollama"
+### "GROQ_API_KEY not set"
 
-```bash
-# Start Ollama service
-ollama serve
-```
+Add your key to `.env` or set the `GROQ_API_KEY` repository secret.
 
-### "Model not found"
+### "No articles found"
 
-```bash
-# List available models
-ollama list
+- Check that the feeds in `config/feeds.yaml` are reachable
+- Increase the look-back window: `python generate.py --days-back 14`
+- Some sources publish infrequently; add more feeds to the category
 
-# Pull the model
-ollama pull llama3.1:8b
-```
+### A section has fewer stories than `max_articles_per_section`
 
-### PDF Generation Fails
-
-WeasyPrint requires system dependencies. On Ubuntu/Debian:
-
-```bash
-sudo apt-get install libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev
-```
-
-On Windows, PDF generation may require additional setup. Use `--no-pdf` to skip.
+The section can only show as many stories as the feeds produced in the look-back window. Add more feeds or widen `--days-back`.
 
 ## License
 
