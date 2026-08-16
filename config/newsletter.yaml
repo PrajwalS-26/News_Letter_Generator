@@ -1,0 +1,37 @@
+# Newsletter Configuration
+
+newsletter:
+  name: "Salesforce AAA UVCE Weekly Digest"
+  organization: "Salesforce AAA UVCE"
+  tagline: "Your weekly dose of Salesforce & AI updates"
+  
+  # Maximum articles per section
+  max_articles_per_section: 5
+  
+  # LLM settings
+  # Choose backend: "ollama" (local) or "groq" (cloud, free, fast)
+  llm:
+    backend: "groq"
+    model: "llama-3.1-70b-versatile"
+    host: "http://localhost:11434"
+    temperature: 0.7
+    max_tokens: 4096
+  
+  # Output settings
+  output:
+    directory: "output"
+    format: ["html", "pdf"]
+  
+  # Distribution settings
+  distribution:
+    email:
+      enabled: false
+      smtp_host: "smtp.gmail.com"
+      smtp_port: 587
+      sender_email: ""
+      recipients: []
+    
+    slack:
+      enabled: false
+      webhook_url: ""
+      channel: "#newsletter"
